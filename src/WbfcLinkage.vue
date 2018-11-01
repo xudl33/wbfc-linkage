@@ -213,6 +213,21 @@
           // 触发联动
           this.handleChange(val);
         });
+        // 如果使用了changeOnSelect=true 那么active-item-change就失效了 无法正常使用
+        if(this.changeOnSelect){
+          // 但是change事件的val会默认增加一个下级的空数组，这样的数据是无法正确联动的，所以需要把最后一个空元素截掉重新赋值
+          this.$on('change', function(val) {
+            // 一级不用
+            if(val.length > 1){
+              // 二级之后需要截掉空数据
+              val = val.slice(0, val.length - 1);
+            }
+            // 如果val的长度比最大联动值小才进行联动 否则change会导致联动时linklevel的失效
+            if(val.length < this.linkLevel){
+              this.handleChange(val);
+            }
+          });
+        }
       }
 
     },
