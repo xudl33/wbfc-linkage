@@ -172,7 +172,7 @@ export default {
 | root-code | 根节点值(获取第一级数据的请求值)   | string | — | 0 |
 | init | 是否初始化加载一级数据 | boolean | — | true |
 | use-cache | 是否使用缓存项，若子列表在加载时本地已经有数据，就不再发送请求，若为false则每次都请求服务器   | boolean | —  | true |
-| show-log | 是否打印debug日志 | boolean | — | true |
+| show-log | 是否打印debug日志 | boolean | — | false |
 | before-linkage | 联动前拦截器 在自定义联动规则时，在联动请求前进行联动值的转换 | function(value) | — | — |
 
 
