@@ -199,3 +199,10 @@ npm test
 ```
 
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+
+## Versions
+版本|更新时间|更新说明
+---|---|---
+1.0.9 | 2018/11/01 | 修正在change-on-select="true"联动失效的问题;
+1.0.8 | 2018/10/26 | 修正手动设置默认值联动不正确的问题;
+1.0.7以前|2018/10/25| wbfc-linkage发布到npm server;
