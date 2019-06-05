@@ -4,7 +4,7 @@
 
 它是一个基于`Wbfc`智源云服务和`element-ui`的联动器组件。它使用`Axios`进行网络请求，因此可以异步联动任意层级的结构化数据。
 
-当一个有着数形或层级关系的数据集合需要异步从服务器加载时，就可以选择智源云联动器。它是`Cascader`(级联选择器)的子集，除了一些特有的属性以外，均可以参考 [Cascader(级联选择器)](http://element-cn.eleme.io/#/zh-CN/component/cascader)
+当一个有着数形或层级关系的数据集合需要异步从服务器加载时，就可以选择智源云联动器。它是`Cascader`(级联选择器)的子集，除了一些特有的属性以外，均可以参考 [Cascader(级联选择器)](https://element.eleme.cn/2.9/#/zh-CN/component/cascader)
 ### 基础用法
 
 一般联动器在有选择行政区划的业务中最为常见
@@ -128,6 +128,39 @@ export default {
 </script>
 ```
 
+### 选择任意节点
+
+在某些特定的场景下，选择值可以是任意节点。可以通过设置属性:cascader-props="{checkStrictly: true}"来实现。更多Props属性设置可以参考 [Cascader(级联选择器)](https://element.eleme.cn/2.9/#/zh-CN/component/cascader) 
+
+```html
+<template>
+  <div id="app">
+    <wbfc-linkage :url="action" :cascader-props="{checkStrictly: true}">
+    </wbfc-linkage>
+  </div>
+</template>
+
+<script>
+import WbfcLinkage from './WbfcLinkage'
+
+export default {
+  name: 'App',
+  components: {
+    WbfcLinkage
+  },
+  computed: {
+  },
+  data () {
+    return {
+      action: 'http://192.168.20.5:8893/system/area/linkageList',
+    }
+  },
+  mounted(){
+  }
+}
+</script>
+```
+
 ### 自定义联动规则
 
 由于业务的不同，可能会遇到数据结构虽然满足层次结构的要求，但是数据项名称不满足，此时可以手动指定联动规则以及参数值。
@@ -171,7 +204,6 @@ export default {
 | link-level | 联动层级 | number | — | 3 |
 | root-code | 根节点值(获取第一级数据的请求值)   | string | — | 0 |
 | init | 是否初始化加载一级数据 | boolean | — | true |
-| use-cache | 是否使用缓存项，若子列表在加载时本地已经有数据，就不再发送请求，若为false则每次都请求服务器   | boolean | —  | true |
 | show-log | 是否打印debug日志 | boolean | — | false |
 | before-linkage | 联动前拦截器 在自定义联动规则时，在联动请求前进行联动值的转换 | function(value) | — | — |
 
@@ -203,6 +235,7 @@ For a detailed explanation on how things work, check out the [guide](http://vuej
 ## Versions
 版本|更新时间|更新说明
 ---|---|---
+1.0.9 | 2019/06/04 | Element2.9升级 兼容了cascade的props功能;
 1.0.9 | 2018/11/01 | 修正在change-on-select="true"联动失效的问题;
 1.0.8 | 2018/10/26 | 修正手动设置默认值联动不正确的问题;
 1.0.7以前|2018/10/25| wbfc-linkage发布到npm server;

@@ -1,6 +1,6 @@
 {
   "name": "wbfc-linkage",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "智源云联动器",
   "author": "XuDL <xudalin33@126.com>",
   "private": false,
@@ -13,9 +13,9 @@
     "build": "node build/build.js"
   },
   "dependencies": {
-    "vue": "^2.5.2",
-    "element-ui": "^2.0.7",
-    "axios": "^0.17.0"
+    "axios": "^0.17.0",
+    "element-ui": "^2.9.1",
+    "vue": "^2.5.2"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
