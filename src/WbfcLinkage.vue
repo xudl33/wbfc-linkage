@@ -2,17 +2,16 @@
   import Axios from 'axios';
   import ElCascader from 'element-ui/lib/cascader';
   import { generateId } from 'element-ui/lib/utils/util';
-
+  delete ElCascader.props.options; // 删除options的属性 否则有必填的校验
+  delete ElCascader.props.props; 
   export default {
     mixins: [ElCascader], // 合并Cascader
     name: 'WbfcLinkage',
     data() {
       return {
         id: generateId(), // id
-        initFlag: false,
-        defaultLinkageExists:{}, // 默认值联动Map 用于校验去重
         defaultLinkage: [], // 默认值联动临时变量
-        lazyLoadResolve: null, //动态加载回调
+        options: [] // option列表
       };
     },
     props: {
@@ -21,46 +20,14 @@
         default: '',
         required: true // 必填
       },
-      cascaderProps: {
-        type: Object,
-        default: null,
-        required: false
-      },
       props: {
         type: Object,
         default() {
-          var _this = this;
-          return Object.assign({
+          return {
             value: 'code', // 转换行政区划的格式 必须使用:props="props"
             label: 'name',
-            children: 'children',
-            lazy: true,
-            lazyLoad (node, resolve) {
-              /*resolve([{
-                code: '110000000000',
-                name: '北京市',
-                children: [{
-                  code: '110100000000',
-                  name: '市辖区',
-                  children: [{
-                    code: '110101000000',
-                    name: '东城去',
-                  }]
-                }]
-              }])*/
-              // 初始化加载 直接联动的
-              if(_this.init && !_this.initFlag){
-                _this.start(node, resolve);
-                return;
-              } else {
-                _this.lazyLoadResolve = resolve;
-              }
-              // 初始化不加载 点击才联动的 必须手动调用过start函数initFlag才会变为true
-              if(_this.initFlag){
-                _this.start(node, resolve);
-              }
-            },
-          }, _this.$options.propsData.cascaderProps);
+            children: 'children'
+          };
         }
       },
       linkLevel: {
@@ -75,101 +42,49 @@
         type: Boolean, // 初始化加载一级数据
         default: true
       },
+      useCache: {
+        type: Boolean, // 使用缓存项，若子列表在加载时本地已经有数据，就不再发送请求，若为false则每次都请求服务器
+        default: true
+      },
       beforeLinkage: Function, // 联动前拦截器
       showLog: {
         type: Boolean, // 打印debug日志
         default: false
       }
     },
-/*    components: {
+    components: {
       ElCascader
-    },*/
+    },
     watch: {
-      /*value(val, oal) {
+      value(val, oal) {
         // 如果新的值和旧的值不同 就触发联动(避免值手动设置value后不能联动的问题)
         if (val.join('') !== oal.join('')) {
-          //this.setDefaultValues();
-        }
-      }*/
-      initFlag(val){
-        // 初始化加载完成
-        var maxLinkIndex = (this.linkLevel - 1);
-        if(val == true){
-          // 如果有默认值的话也需要联动
-          if(this.value && this.value.length > 0){
-            this.setDefaultLinkage(this.value);
-            this.setDefaultValue();
-          }
+          this.setDefaultValues();
         }
       }
     },
     methods: {
-      setDefaultLinkage(tempValue){
-        var maxLinkIndex = (this.linkLevel - 1);
-        for(var i in tempValue){
-          var tempVal = tempValue[i];
-          if(tempVal.constructor == Array){
-            this.setDefaultLinkage(tempVal);
+      handleChange(val) {
+        var _this = this;
+        var linkVal = _this.rootCode;
+        var linkIndex = 0;
+        if (val) {
+          linkIndex = val.length;
+          if (linkIndex <= 0) {
+            linkVal = _this.rootCode;
           } else {
-            if(i < maxLinkIndex){
-              if(!this.defaultLinkageExists[tempValue[i]]){
-                this.defaultLinkageExists[tempValue[i]] = tempValue[i];
-                this.defaultLinkage.push(tempValue[i]);
-              }
-            }
+            linkVal = val[linkIndex - 1];
           }
         }
-      },
-      setDefaultValue(){
-        if(this.defaultLinkage.length > 0){
-          var linkNode = this.$refs.panel.getNodeByValue(this.defaultLinkage[0]);
-          this.$refs.panel.lazyLoad(linkNode, () => {
-            this.defaultLinkage = this.defaultLinkage.slice(1);
-            this.setDefaultValue();
-          });
-        } else {
-          // 清空联动值存在缓存
-          this.defaultLinkageExists = {};
-          //console.log(this.$refs.panel.store.getNodes())
-          // 单选同步
-          this.$refs.panel.syncActivePath();
-          // 多选同步
-          this.$refs.panel.syncMultiCheckState();
-          // 回显文字
-          this.computePresentContent();
-        }
-      },
-      writeLog(info, obj) {
-        if (this.showLog) {
-          if (arguments.length > 2) {
-            console.log('WbfcLinkage(id = ' + this.id + ') ' + info, Array.prototype.slice.call(arguments, 1));
+        var parentNode = _this.findTreeNode(linkVal, _this.options);
+        if (parentNode) {
+          var childList = parentNode[_this.props.children];
+          if (_this.useCache && childList && childList.length > 0) {
+            _this.writeLog('linkage ' + parentNode[_this.props.label] + ':' + linkVal + ' with Cache', childList);
             return;
           }
-          if (info && obj) {
-            console.log('WbfcLinkage(id = ' + this.id + ') ' + info, obj);
-          } else {
-            console.log('WbfcLinkage(id = ' + this.id + ') ' + info);
-          }
         }
-      },
-      getValues() {
-        return this.value;
-      },
-      getValue(i) {
-        var index = i || 0;
-        return this.value[index];
-      },
-      start(node, resolve){
-        var _this = this;
-        // 默认值
-        if(!node){
-          node = {level: 0,loading: true,root: true};
-        }
-
-        var linkVal = node.value || node.config?node.data[node.config.value]:null || _this.rootCode;
-        // 这个默认数据格式是联动行政区划使用的 如果需要联动其他数据 
-        var linkageVal = { 'code': linkVal }; 
-        // 可以实现beforeLinkage方法并返回 参数值
+        var linkageVal = { 'code': linkVal }; // 这个默认数据格式是联动行政区划使用的 如果需要联动其他数据 可以实现beforeLinkage方法并返回 参数值
         if (_this.beforeLinkage) {
           var tempRes = _this.beforeLinkage.call(_this, linkVal);
           if (tempRes && tempRes !== false) {
@@ -184,23 +99,51 @@
           };
           _this.writeLog('axios with', tep);
           _this.writeLog('axios result', response.data);
-          /*var linkChildArray = [];*/
           if (response && response.data && response.data.code === '000') {
-            var linkResult = response.data.result;
-            // leaf判断是否为叶子节点，leaf会不显示下级的箭头  -1是因为需要用前一级联动值判断当前联动的级别
-            linkResult = linkResult.map(item => Object.assign(item, {leaf: node.level >= (_this.linkLevel - 1)}));
-            /*linkChildArray.push(linkResult);*/
-            if(!_this.initFlag){
-              _this.initFlag = true;
-            }
-            if(resolve){
-              resolve(linkResult);
+            _this.writeLog('linkIndex = ' + linkIndex + ' ,linkLevel = ' + _this.linkLevel);
+            // 如果达到最大联动层级 就删除子节点
+            if (linkIndex + 1 >= _this.linkLevel) {
+              response.data.result.forEach((n, i) => {
+                n[_this.props.children] = null;
+              });
             } else {
-              _this.lazyLoadResolve(linkResult);
+              // 一个空的子列表是为了能够动态加载下一级，否则就不显示箭头>了
+              response.data.result.forEach((n, i) => {
+                n[_this.props.children] = [];
+              });
             }
-            
+            // 如果是一级 就直接赋值给options
+            if (linkIndex <= 0) {
+              _this.options = response.data.result;
+            } else {
+              if (parentNode) {
+                parentNode[_this.props.children] = response.data.result;
+              }
+            }
+            // 设置默认值
+            _this.setDefaultValues();
           }
         });
+      },
+      setDefaultValues () { // 设置默认值
+        var _this = this;
+        var defaultValues = _this.value;
+        // 如果大于联动级别，那么截取一下
+        if (defaultValues.length > _this.linkLevel) {
+          defaultValues = defaultValues.slice(0, _this.linkLevel);
+        }
+        if (defaultValues.length <= 0) {
+          return;
+        }
+        var linkIndex = _this.defaultLinkage.length;        
+        // 如果 联动时使用的是当前级别的编码 所以不用联动到最后 且 临时变量的长度比值小就进行联动
+        if (linkIndex + 1 < _this.linkLevel && linkIndex < defaultValues.length) {
+            _this.defaultLinkage = _this.defaultLinkage.concat(defaultValues[linkIndex]);
+            _this.handleChange(_this.defaultLinkage);
+        } else {
+          // 联动结束后清空临时变量
+          _this.defaultLinkage = [];
+        }
       },
       findTreeNode(code, list) { // 查找树形结构的节点
         var _this = this;
@@ -223,6 +166,31 @@
         }
         return null;
       },
+      getValues() {
+        return this.value;
+      },
+      getValue(i) {
+        var index = i || 0;
+        return this.value[index];
+      },
+      start() {
+        // 加载数据
+        this.handleChange();
+        this.writeLog('is inited with configs', this.linkLevel);
+      },
+      writeLog(info, obj) {
+        if (this.showLog) {
+          if (arguments.length > 2) {
+            console.log('WbfcLinkage(id = ' + this.id + ') ' + info, Array.prototype.slice.call(arguments, 1));
+            return;
+          }
+          if (info && obj) {
+            console.log('WbfcLinkage(id = ' + this.id + ') ' + info, obj);
+          } else {
+            console.log('WbfcLinkage(id = ' + this.id + ') ' + info);
+          }
+        }
+      },
       linkage(url, param, callback) {
         var _this = this;
         // 行政区划数据
@@ -238,21 +206,37 @@
         }).catch(function(response) {
           _this.writeLog('axios exception', response);
         });
-      }
-
-    },
-    mounted(){
-      /*if(this.value && this.value.length > 0){
-        for (var i in this.value) {
-          var linkNode = this.panel.getNodeByValue(this.value[i]);
-          this.panel.lazyLoad(linkNode);
+      },
+      listening() {
+        // 监听激活item事件
+        this.$on('active-item-change', function(val) {
+          // 触发联动
+          this.handleChange(val);
+        });
+        // 如果使用了changeOnSelect=true 那么active-item-change就失效了 无法正常使用
+        if(this.changeOnSelect){
+          // 但是change事件的val会默认增加一个下级的空数组，这样的数据是无法正确联动的，所以需要把最后一个空元素截掉重新赋值
+          this.$on('change', function(val) {
+            // 一级不用
+            if(val.length > 1){
+              // 二级之后需要截掉空数据
+              val = val.slice(0, val.length - 1);
+            }
+            // 如果val的长度比最大联动值小才进行联动 否则change会导致联动时linklevel的失效
+            if(val.length < this.linkLevel){
+              this.handleChange(val);
+            }
+          });
         }
       }
-      console.log();*/
     },
     created() {
-      // 由于ElementUI2.9.1带有默认的动态加载API，现在新版的wbfclinage就没有那么臃肿啦
-      //this.setDefaultValues();
+      // 初始化各个监听器
+      this.listening();
+      // 初始化联动 若需要初始化 则加载列表
+      if (this.init) {
+        this.start();
+      }
     }
   };
 </script>

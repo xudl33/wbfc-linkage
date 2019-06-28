@@ -203,6 +203,7 @@ For a detailed explanation on how things work, check out the [guide](http://vuej
 ## Versions
 版本|更新时间|更新说明
 ---|---|---
+1.0.9-r2 | 2019/06/28 | 修正wbfcLinkage版本没有退回的问题
 1.0.9-r1 | 2019/06/25 | 修正element依赖版本(2.9之后的API重构了，如果直接install会被更新成最新版)
 1.0.9 | 2018/11/01 | 修正在change-on-select="true"联动失效的问题;
 1.0.8 | 2018/10/26 | 修正手动设置默认值联动不正确的问题;
