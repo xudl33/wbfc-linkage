@@ -48,6 +48,11 @@
                   }]
                 }]
               }])*/
+              // 修正2.15.1版本升级后异步加载有进度条的问题 如果不调用resolve 就会一直转圈圈
+              if(node.isLeaf){
+                resolve();
+                return;
+              }
               // 初始化加载 直接联动的
               if(_this.init && !_this.initFlag){
                 _this.start(node, resolve);

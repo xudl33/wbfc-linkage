@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div class="wbfc-linkage block">
-    联动url:<el-input v-model="action" placeholder="http://192.168.20.5:8893/system/area/linkageList"></el-input><el-button type="primary" @click="reInit">点击重新初始化</el-button>
+    联动url:<el-input v-model="action" placeholder="http://192.168.20.208:8650/system/area/linkageList"></el-input><el-button type="primary" @click="reInit">点击重新初始化</el-button>
     </div>
     <div class="wbfc-linkage block">
       <span class="demonstration">直接使用v-model的绑定值</span>
@@ -20,6 +20,7 @@
       </wbfc-linkage>
       <el-button type="primary" @click="getData2">获取数值数据</el-button>
       <el-button type="primary" @click="getData3">获取第二级的值</el-button>
+      <el-button type="primary" @click="getVal">获取选中的文本</el-button>
     </div>
     <div class="wbfc-linkage block">
       <span class="demonstration">设置默认值</span>
@@ -86,6 +87,9 @@ export default {
     },
     getData3() {
       alert(this.$refs.linkage2.getValue(1));
+    },
+    getVal(){
+      alert(this.$refs['linkage2'].currentLabels);
     }
   },
   mounted(){

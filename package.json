@@ -1,6 +1,6 @@
 {
   "name": "wbfc-linkage",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "智源云联动器",
   "author": "XuDL <xudalin33@126.com>",
   "private": false,
@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "axios": "^0.17.0",
-    "element-ui": "^2.9.1",
+    "element-ui": "^2.15.1",
     "vue": "^2.5.2"
   },
   "devDependencies": {
